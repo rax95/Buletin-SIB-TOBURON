@@ -1,0 +1,297 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // Hardened Global Primitives
+    // -------------------------------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isBootstrappedAdmin() {
+      return isVerifiedUser()
+        && request.auth.token.email is string
+        && request.auth.token.email.lower() == 'raxxon47@gmail.com';
+    }
+
+    function isAdmin() {
+      return isVerifiedUser() && (
+        isBootstrappedAdmin() ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidDateString(val) {
+      return val is string && val.size() == 10 && val.matches('^\\d{4}-\\d{2}-\\d{2}$');
+    }
+
+    function isValidTimeString(val) {
+      return val is string && val.size() == 5 && val.matches('^\\d{2}:\\d{2}$');
+    }
+
+    function isValidImageUrl(val) {
+      return val is string
+        && val.size() >= 5
+        && val.size() <= 1000
+        && val.matches('^(/src/assets/images/|https://).+$');
+    }
+
+    function isValidPublishStatus(val) {
+      return val is string && val.size() <= 20 && val in ['published', 'draft'];
+    }
+
+    // -------------------------------------------------------------------------
+    // Validation Blueprints (Anti-Update-Gap)
+    // -------------------------------------------------------------------------
+    function isValidNewsArticle(data) {
+      return data.keys().hasAll([
+          'title', 'summary', 'content', 'category', 'imageUrl',
+          'authorName', 'authorUid', 'isFeatured', 'status',
+          'publishedDate', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'title', 'summary', 'content', 'category', 'imageUrl',
+          'authorName', 'authorUid', 'isFeatured', 'status',
+          'publishedDate', 'createdAt', 'updatedAt'
+        ])
+        && data.title is string && data.title.size() >= 3 && data.title.size() <= 140
+        && data.summary is string && data.summary.size() >= 10 && data.summary.size() <= 320
+        && data.content is string && data.content.size() >= 20 && data.content.size() <= 8000
+        && data.category is string && data.category.size() <= 40
+        && data.category in ['Warta Jemaat', 'Pengumuman', 'Pelayanan', 'Renungan']
+        && isValidImageUrl(data.imageUrl)
+        && data.authorName is string && data.authorName.size() >= 2 && data.authorName.size() <= 80
+        && isValidId(data.authorUid)
+        && data.isFeatured is bool
+        && isValidPublishStatus(data.status)
+        && isValidDateString(data.publishedDate)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidChurchSchedule(data) {
+      return data.keys().hasAll([
+          'title', 'category', 'dayLabel', 'eventDate', 'startTime', 'endTime',
+          'location', 'speakerOrLead', 'description', 'isRecurring',
+          'status', 'authorUid', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'title', 'category', 'dayLabel', 'eventDate', 'startTime', 'endTime',
+          'location', 'speakerOrLead', 'description', 'isRecurring',
+          'status', 'authorUid', 'createdAt', 'updatedAt'
+        ])
+        && data.title is string && data.title.size() >= 3 && data.title.size() <= 120
+        && data.category is string && data.category.size() <= 40
+        && data.category in ['Ibadah Raya', 'Doa & Pendalaman', 'Pemuda & Remaja', 'Sekolah Minggu', 'Pelayanan Kasih']
+        && data.dayLabel is string && data.dayLabel.size() >= 3 && data.dayLabel.size() <= 30
+        && isValidDateString(data.eventDate)
+        && isValidTimeString(data.startTime)
+        && isValidTimeString(data.endTime)
+        && data.location is string && data.location.size() >= 2 && data.location.size() <= 120
+        && data.speakerOrLead is string && data.speakerOrLead.size() >= 2 && data.speakerOrLead.size() <= 100
+        && data.description is string && data.description.size() >= 5 && data.description.size() <= 1000
+        && data.isRecurring is bool
+        && isValidPublishStatus(data.status)
+        && isValidId(data.authorUid)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidGalleryPhoto(data) {
+      return data.keys().hasAll([
+          'title', 'caption', 'album', 'imageUrl', 'takenDate',
+          'photographer', 'status', 'authorUid', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'title', 'caption', 'album', 'imageUrl', 'takenDate',
+          'photographer', 'status', 'authorUid', 'createdAt', 'updatedAt'
+        ])
+        && data.title is string && data.title.size() >= 3 && data.title.size() <= 120
+        && data.caption is string && data.caption.size() >= 5 && data.caption.size() <= 500
+        && data.album is string && data.album.size() <= 40
+        && data.album in ['Ibadah Minggu', 'Persekutuan Pemuda', 'Sekolah Minggu', 'Bakti Sosial', 'Perayaan Khusus']
+        && isValidImageUrl(data.imageUrl)
+        && isValidDateString(data.takenDate)
+        && data.photographer is string && data.photographer.size() >= 2 && data.photographer.size() <= 80
+        && isValidPublishStatus(data.status)
+        && isValidId(data.authorUid)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidAdminRecord(data) {
+      return data.keys().hasAll(['displayName', 'role', 'addedByUid', 'createdAt'])
+        && data.keys().hasOnly(['displayName', 'role', 'addedByUid', 'createdAt'])
+        && data.displayName is string && data.displayName.size() >= 2 && data.displayName.size() <= 80
+        && data.role is string && data.role.size() <= 20 && data.role == 'admin'
+        && isValidId(data.addedByUid)
+        && data.createdAt is timestamp;
+    }
+
+    // -------------------------------------------------------------------------
+    // Collection: /news/{newsId}
+    // -------------------------------------------------------------------------
+    match /news/{newsId} {
+      allow get: if isValidId(newsId) && (
+        existing().status == 'published' || isAdmin()
+      );
+
+      allow list: if existing().status == 'published'
+        || (isVerifiedUser() && (existing().authorUid == request.auth.uid || isBootstrappedAdmin()));
+
+      allow create: if isVerifiedUser()
+        && isValidId(newsId)
+        && isValidNewsArticle(incoming())
+        && incoming().authorUid == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && isAdmin();
+
+      allow update: if isVerifiedUser()
+        && isValidId(newsId)
+        && isValidNewsArticle(incoming())
+        && incoming().authorUid == existing().authorUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'title', 'summary', 'content', 'category', 'imageUrl',
+            'authorName', 'isFeatured', 'status', 'publishedDate', 'updatedAt'
+          ]) ||
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'status', 'isFeatured', 'updatedAt'
+          ])
+        )
+        && isAdmin();
+
+      allow delete: if isVerifiedUser() && isValidId(newsId) && isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Collection: /schedules/{scheduleId}
+    // -------------------------------------------------------------------------
+    match /schedules/{scheduleId} {
+      allow get: if isValidId(scheduleId) && (
+        existing().status == 'published' || isAdmin()
+      );
+
+      allow list: if existing().status == 'published'
+        || (isVerifiedUser() && (existing().authorUid == request.auth.uid || isBootstrappedAdmin()));
+
+      allow create: if isVerifiedUser()
+        && isValidId(scheduleId)
+        && isValidChurchSchedule(incoming())
+        && incoming().authorUid == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && isAdmin();
+
+      allow update: if isVerifiedUser()
+        && isValidId(scheduleId)
+        && isValidChurchSchedule(incoming())
+        && incoming().authorUid == existing().authorUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'title', 'category', 'dayLabel', 'eventDate', 'startTime', 'endTime',
+            'location', 'speakerOrLead', 'description', 'isRecurring', 'status', 'updatedAt'
+          ]) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+        )
+        && isAdmin();
+
+      allow delete: if isVerifiedUser() && isValidId(scheduleId) && isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Collection: /gallery/{photoId}
+    // -------------------------------------------------------------------------
+    match /gallery/{photoId} {
+      allow get: if isValidId(photoId) && (
+        existing().status == 'published' || isAdmin()
+      );
+
+      allow list: if existing().status == 'published'
+        || (isVerifiedUser() && (existing().authorUid == request.auth.uid || isBootstrappedAdmin()));
+
+      allow create: if isVerifiedUser()
+        && isValidId(photoId)
+        && isValidGalleryPhoto(incoming())
+        && incoming().authorUid == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && isAdmin();
+
+      allow update: if isVerifiedUser()
+        && isValidId(photoId)
+        && isValidGalleryPhoto(incoming())
+        && incoming().authorUid == existing().authorUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'title', 'caption', 'album', 'imageUrl', 'takenDate',
+            'photographer', 'status', 'updatedAt'
+          ]) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+        )
+        && isAdmin();
+
+      allow delete: if isVerifiedUser() && isValidId(photoId) && isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Collection: /admins/{adminUid}
+    // -------------------------------------------------------------------------
+    match /admins/{adminUid} {
+      allow get: if isVerifiedUser() && isValidId(adminUid) && (
+        request.auth.uid == adminUid || isAdmin()
+      );
+
+      allow list: if isBootstrappedAdmin();
+
+      allow create: if isVerifiedUser()
+        && isValidId(adminUid)
+        && isValidAdminRecord(incoming())
+        && incoming().addedByUid == request.auth.uid
+        && incoming().createdAt == request.time
+        && isAdmin();
+
+      allow update: if isVerifiedUser()
+        && isValidId(adminUid)
+        && isValidAdminRecord(incoming())
+        && incoming().addedByUid == existing().addedByUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName'])
+        && isAdmin();
+
+      allow delete: if isVerifiedUser()
+        && isValidId(adminUid)
+        && adminUid != request.auth.uid
+        && isAdmin();
+    }
+  }
+}

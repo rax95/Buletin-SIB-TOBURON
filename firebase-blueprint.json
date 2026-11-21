@@ -1,0 +1,345 @@
+{
+  "entities": {
+    "NewsArticle": {
+      "title": "NewsArticle",
+      "description": "Berita terkini, warta jemaat, pengumuman, dan renungan SIB TOBURON.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 140,
+          "description": "Judul berita atau warta gereja."
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 320,
+          "description": "Ringkasan singkat isi berita untuk pratinjau kartu dan layar TV."
+        },
+        "content": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 8000,
+          "description": "Isi lengkap berita atau pengumuman jemaat."
+        },
+        "category": {
+          "type": "string",
+          "enum": ["Warta Jemaat", "Pengumuman", "Pelayanan", "Renungan"],
+          "maxLength": 40,
+          "description": "Kategori berita gereja."
+        },
+        "imageUrl": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 1000,
+          "pattern": "^(/src/assets/images/|https://).+$",
+          "description": "URL gambar ilustrasi berita."
+        },
+        "authorName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "description": "Nama penulis atau bidang pelayanan penerbit."
+        },
+        "authorUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID Firebase admin pembuat berita."
+        },
+        "isFeatured": {
+          "type": "boolean",
+          "description": "Menandai berita utama di bagian atas beranda dan slideshow TV."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["published", "draft"],
+          "maxLength": 20,
+          "description": "Status publikasi berita."
+        },
+        "publishedDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Tanggal terbit berita dalam format YYYY-MM-DD."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp server saat dokumen dibuat."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp server saat dokumen terakhir diperbarui."
+        }
+      },
+      "required": [
+        "title",
+        "summary",
+        "content",
+        "category",
+        "imageUrl",
+        "authorName",
+        "authorUid",
+        "isFeatured",
+        "status",
+        "publishedDate",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ChurchSchedule": {
+      "title": "ChurchSchedule",
+      "description": "Jadwal ibadah raya, persekutuan, doa, sekolah minggu, dan kegiatan pelayanan gereja.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 120,
+          "description": "Nama kegiatan atau kebaktian."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "Ibadah Raya",
+            "Doa & Pendalaman",
+            "Pemuda & Remaja",
+            "Sekolah Minggu",
+            "Pelayanan Kasih"
+          ],
+          "maxLength": 40,
+          "description": "Kategori kegiatan gereja."
+        },
+        "dayLabel": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 30,
+          "description": "Hari pelaksanaan kegiatan (misalnya Minggu, Rabu, Sabtu)."
+        },
+        "eventDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Tanggal kegiatan dalam format YYYY-MM-DD."
+        },
+        "startTime": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 5,
+          "pattern": "^\\d{2}:\\d{2}$",
+          "description": "Waktu mulai dalam format HH:mm."
+        },
+        "endTime": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 5,
+          "pattern": "^\\d{2}:\\d{2}$",
+          "description": "Waktu selesai dalam format HH:mm."
+        },
+        "location": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120,
+          "description": "Ruang atau lokasi kegiatan di SIB TOBURON."
+        },
+        "speakerOrLead": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100,
+          "description": "Pengkhotbah, pemimpin pujian, atau koordinator kegiatan."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 1000,
+          "description": "Keterangan singkat dan informasi persiapan bagi jemaat."
+        },
+        "isRecurring": {
+          "type": "boolean",
+          "description": "Menandai apakah kegiatan berlangsung rutin mingguan."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["published", "draft"],
+          "maxLength": 20,
+          "description": "Status publikasi jadwal."
+        },
+        "authorUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID Firebase admin pembuat jadwal."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp server saat dokumen dibuat."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp server saat dokumen terakhir diperbarui."
+        }
+      },
+      "required": [
+        "title",
+        "category",
+        "dayLabel",
+        "eventDate",
+        "startTime",
+        "endTime",
+        "location",
+        "speakerOrLead",
+        "description",
+        "isRecurring",
+        "status",
+        "authorUid",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "GalleryPhoto": {
+      "title": "GalleryPhoto",
+      "description": "Dokumentasi foto kegiatan ibadah, persekutuan, dan pelayanan SIB TOBURON.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 120,
+          "description": "Judul foto dokumentasi."
+        },
+        "caption": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 500,
+          "description": "Deskripsi dan cerita di balik foto."
+        },
+        "album": {
+          "type": "string",
+          "enum": [
+            "Ibadah Minggu",
+            "Persekutuan Pemuda",
+            "Sekolah Minggu",
+            "Bakti Sosial",
+            "Perayaan Khusus"
+          ],
+          "maxLength": 40,
+          "description": "Nama album galeri."
+        },
+        "imageUrl": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 1000,
+          "pattern": "^(/src/assets/images/|https://).+$",
+          "description": "URL gambar dokumentasi."
+        },
+        "takenDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Tanggal pengambilan foto dalam format YYYY-MM-DD."
+        },
+        "photographer": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "description": "Nama fotografer atau tim multimedia gereja."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["published", "draft"],
+          "maxLength": 20,
+          "description": "Status publikasi foto."
+        },
+        "authorUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID Firebase admin pengunggah foto."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp server saat dokumen dibuat."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp server saat dokumen terakhir diperbarui."
+        }
+      },
+      "required": [
+        "title",
+        "caption",
+        "album",
+        "imageUrl",
+        "takenDate",
+        "photographer",
+        "status",
+        "authorUid",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Catatan otorisasi admin terverifikasi untuk mengelola Buletin SIB TOBURON (tanpa PII).",
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "description": "Nama tampilan pengurus admin."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin"],
+          "maxLength": 20,
+          "description": "Peran akses manajemen konten."
+        },
+        "addedByUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID admin yang memberikan otorisasi."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp server saat hak admin diberikan."
+        }
+      },
+      "required": ["displayName", "role", "addedByUid", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/news/{newsId}": {
+      "schema": { "$ref": "#/entities/NewsArticle" },
+      "description": "Koleksi berita terkini dan warta jemaat SIB TOBURON."
+    },
+    "/schedules/{scheduleId}": {
+      "schema": { "$ref": "#/entities/ChurchSchedule" },
+      "description": "Koleksi jadwal ibadah dan kegiatan pelayanan gereja."
+    },
+    "/gallery/{photoId}": {
+      "schema": { "$ref": "#/entities/GalleryPhoto" },
+      "description": "Koleksi foto galeri interaktif dokumentasi gereja."
+    },
+    "/admins/{adminUid}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Daftar UID admin terpercaya yang diizinkan mengelola buletin."
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Buletin SIB TOBURON",
+  "description": "Aplikasi buletin interaktif real-time SIB TOBURON yang menyajikan berita terkini, jadwal kegiatan gereja, dan galeri foto bagi seluruh jemaat di laptop, tablet, smartphone, dan layar TV.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
